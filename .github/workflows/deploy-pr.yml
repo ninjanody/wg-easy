@@ -1,10 +1,8 @@
-name: Build & Publish Latest
+name: Build Pull Request
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - production
+  pull_request:
 
 jobs:
   deploy:
@@ -17,7 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        ref: production
+        ref: master
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
@@ -32,12 +30,9 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Set environment variables
-      run: echo RELEASE=$(cat ./src/package.json | jq -r .release | jq -r .version) >> $GITHUB_ENV
-
-    - name: Build & Publish Docker Image
+    - name: Build Docker Image
       uses: docker/build-push-action@v6
       with:
-        push: true
+        push: false
         platforms: linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8
-        tags: ghcr.io/wg-easy/wg-easy:latest, ghcr.io/wg-easy/wg-easy:${{ env.RELEASE }}
+        tags: ghcr.io/wg-easy/wg-easy:pr
